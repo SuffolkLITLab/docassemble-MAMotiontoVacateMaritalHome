@@ -3,7 +3,7 @@ features:
   question help button: True
 ---
 include:
-  - basic-questions.yml
+  - docassemble.MAVirtualCourt:basic-questions.yml
 ---
 metadata:
 	title: |
@@ -12,6 +12,9 @@ metadata:
 		- Family
 	description: |
 		An interview to ask the court to order the other side in your family law case to leave your home 
+---
+code: |
+  allowed_courts = ["Probate and Family Court"]
 ---
 objects:
   opposing_party: Individual
@@ -32,6 +35,8 @@ code: |
     cannot_complete_interview
   prerequisites
   vacate_address.address
+  users[0].mobile_number
+  user_needs_interpreter
   if who_lives_at_vacate_address.all_true():
     ever_lived_together = True
     parties_live_together_now = True
@@ -92,6 +97,7 @@ code: |
     address_is_impounded = False
   else:
     domestic_violence_shelter
+  users[0].address.geolocate()    
   court_county
   docket_number.target_number
   docket_number.gather()
@@ -101,7 +107,9 @@ code: |
   date
   if signed_under_oath == False:
     cannot_complete_interview
+  preview_screen
   basic_questions_signature_flow
+  download
 ---
 code: |
   users.there_is_another = False 
@@ -175,7 +183,7 @@ subquestion: |
 field: intro_screen_seen 
 ---
 question: |
-   Before we continuee...
+   Before we continue...
 subquestion: |   
    Before continuing with this interview, make sure that all of these things are true.  If not, you will not be able to complete this interview.   
    
@@ -220,6 +228,39 @@ fields:
   - City: vacate_address.city
   - State: vacate_address.state
   - Zip code: vacate_address.zip
+---
+id: contact information
+question: |
+  Contact information
+subquestion: |
+  Put at least one way for the court to reach you below.
+fields:
+  - Mobile number: users[0].mobile_number
+    required: False
+  - Other phone number: users[0].phone_number
+    required: False
+  - Email address: users[0].email    
+    datatype: email
+    required: False
+  - Best way to reach you: users[0].other_contact_method
+    input type: area
+    required: False
+    help: |
+      If you do not have a phone number or email the court can use, provide
+      specific contact instructions. For example, use a friend's phone number.
+      But the friend must be someone you can trust to tell you the court is
+      trying to reach you.
+validation code: |
+  if (not showifdef('users[0].phone_number') and \
+      (not showifdef('users[0].mobile_number')) and \
+      (not showifdef('users[0].email')) and \
+      (not showifdef('users[0].other_contact_method'))):
+    validation_error(word("You need to provide at least one contact method."))
+help: |
+  You _must_ provide contact information so the court can reach you.
+  
+  Some forms allow you to tell the court you need to keep your address, phone,
+  and email confidential, so that only court staff can see this information. 
 ---
 question: 
   Who lives at ${vacate_address.on_one_line()} now?
@@ -444,6 +485,9 @@ question: | #caseinfo
   Probate and Family Court Case
 subquestion: |
   You said you already have a case filed in the Probate and Family Courts.  Tell us more about your case.
+  
+  Look in the top left corner of your court papers. Choose the county
+  that matches your court.
 fields:
   - What county is this case in?: court_county
     choices:
@@ -572,7 +616,7 @@ subquestion: |
 fields:
   - no label: reasons_for_danger
     input type: area
-    rows: 10  
+    rows: 10
 ---
 question: 
   Why did you move out of your home?
@@ -611,7 +655,7 @@ fields:
 question: 
   Date
 subquestion: 
-  What date do you intend to file this paperwork? How do I set a default to today?
+  What date do you intend to file this paperwork?
 fields:
   - Date: date
     datatype: date
@@ -627,7 +671,7 @@ subquestion: |
 fields:
   - no label: affidavit_reviewed
     datatype: area
-    rows: 20
+    rows: 10
     default: ${affidavit_draft}
 ---
 template: affidavit_draft
@@ -668,18 +712,82 @@ content: |
   % endif
   ${person_in_danger_affidavit}
   ${reasons_for_danger} 
-  
 ---
-mandatory: True
-question: | 
-	Here is your motion:
-	
-	${ Motion_to_Vacate_Marital_Home_Variable }
+id: review before signature
+need: form_to_sign
+continue button field: preview_screen
+question: |
+  Nearly finished
+subquestion: |
+  You are almost done! Please click on the form below. It will open in a new window so you 
+  can review it and make sure it is correct.
+  
+  Don't forget to come back to this page to click to the final step of signing and sending 
+  the form to the court. 
+  
+   ${form_to_sign }
 
-buttons: 
-    - Exit: exit
-    - Restart: restart
+progress: 95
+---
+event: download
+id: download form
+comment: |
+  The attachment email screen relies on final_form_to_file being defined. This
+  will be built from the interview_metadata dictionary's contents, but if you
+  add any addenda you will want to set this in a code block somewhere that takes
+  priority over basic-questions.yml.
+decoration: file-download
+question: |
+  % if not defined('email_success') or not email_success:
+  Review, Download, and Send Form
+  % else:
+  Form delivered
+  % endif
+subquestion: |
+  % if not defined('email_success') or not email_success:
+  Thank you ${users[0]}. Your form is ready to send to the court. **It is not
+  delivered until you complete the delivery process below.**
+
+  1. Click the preview image below to open the form in a new window. Correct any errors using the "Make changes" button below.
+  1. Download and save or print a copy of this form for your 
+  records.
+  1. Click the "Submit to ${courts[0]}" button to send it to the court. 
+  1. You will have a chance to add instructions to the clerk and see the cover page before final delivery.
+  % else:
+  If you do not hear from the court in 1 business day, call the Trial Court’s
+  Emergency HelpLine 833-91-COURT (833-912-6878).
+  
+  The Emergency HelpLine is open:  
+  8:30am - 4:30pm,   
+  Monday - Friday.
+  % endif
+  
+  ${ form_to_file_no_cover }  
+  
+  % if not defined('email_success') or not email_success:
+    ${ action_button_html( url_action('form_delivery_complete'), id_tag="submitToCourt", label="Submit to " + str(courts[0].name), icon=send_icon, size="md", color="primary")}
+    
+  Or download/email below:
+  % else:
+    Your email has already been delivered to ${courts[0]}
+    
+  [:file-download: Download with cover page](${final_form_to_file.url_for()})    
+  % endif
+progress: 100
 attachment code: Motion_to_Vacate_Marital_Home_Variable
+section: download
+---
+code: |
+  form_to_sign = pdf_concatenate(Motion_to_Vacate_Marital_Home_Variable_preview, filename="Motion to Vacate Marital Home (Preview).pdf")
+---
+code: |
+  form_to_file_no_cover = pdf_concatenate(Motion_to_Vacate_Marital_Home_Variable, filename="Motion to Vacate Marital Home.pdf")
+---
+attachment:
+	- name: Motion to Vacate Marital Home
+	  variable name: Motion_to_Vacate_Marital_Home_Variable_preview
+	  filename: Motion_to_Vacate_Marital_Home
+	  docx template file: Motion_to_Vacate_Marital_Home.docx
 ---
 attachment:
 	- name: Motion to Vacate Marital Home
