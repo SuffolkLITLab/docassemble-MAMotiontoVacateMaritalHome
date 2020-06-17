@@ -98,7 +98,8 @@ code: |
   else:
     domestic_violence_shelter
   users[0].address.geolocate()    
-  court_county
+  courts[0].address.county
+  who_filed_case
   docket_number.target_number
   docket_number.gather()
   opposing_party.has_counsel
@@ -485,26 +486,7 @@ question: | #caseinfo
   Probate and Family Court Case
 subquestion: |
   You said you already have a case filed in the Probate and Family Courts.  Tell us more about your case.
-  
-  Look in the top left corner of your court papers. Choose the county
-  that matches your court.
 fields:
-  - What county is this case in?: court_county
-    choices:
-      - Barnstable: Barnstable
-      - Berkshire: Berkshire  
-      - Bristol: Bristol
-      - Dukes: Dukes
-      - Essex: Essex
-      - Franklin: Franklin
-      - Hampden: Hampden
-      - Hampshire: Hampshire
-      - Middlesex: Middlesex
-      - Nantucket: Nantucket
-      - Norfolk: Norfolk
-      - Plymouth: Plymouth
-      - Suffolk: Suffolk
-      - Worcester: Worcester
   - Who was the first person to file this case?: who_filed_case
     help: |
       If you filed the "complaint" then you filed this case.  If the other side filed the complaint, then they filed the case.
