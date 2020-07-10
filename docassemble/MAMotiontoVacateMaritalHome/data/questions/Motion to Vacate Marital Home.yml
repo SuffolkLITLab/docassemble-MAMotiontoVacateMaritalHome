@@ -197,7 +197,7 @@ subquestion: |
    Are all of these things true? 
    
    % if married_to_opposing_party: 
-   * You already have a case against the ${opposing_party.familiar()} in the Probate and Family Court. 
+   * You already have a case against ${opposing_party.familiar()} in the Probate and Family Court. 
    * You live with or you used to live with ${opposing_party.familiar()}. 
    * You need ${opposing_party.familiar()} to leave the address you currently live at together or the last address you lived at together. 
    * You need to file this motion to protect the health, safety, or welfare of you or your children.
