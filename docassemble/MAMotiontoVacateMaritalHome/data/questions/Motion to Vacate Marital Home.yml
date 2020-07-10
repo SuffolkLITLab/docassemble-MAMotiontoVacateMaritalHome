@@ -726,7 +726,15 @@ id: affidavit review
 question: 
   Affidavit Review
 subquestion: |
-  This is a rough draft of your affidavit.  You can make any changes or add any more information here that you want the judge to know. Style note: each paragraph below will be displayed as part of a numbered list. The court expects short declarative paragraphs. Remember, everything you put here will be under oath. 
+  This is a rough draft of your affidavit.  You can make any changes or
+  add any more information here that you want the judge to know. 
+  
+  Each paragraph below will be an item in a numbered list. You 
+  can add a new paragraph by using the "Enter" key.
+  
+  Keep each separate paragraph short and focused on the facts of what
+  happened and how it affected you. Remember, everything you put here 
+  will be under oath. 
   
   I, ${users[0].name.full()}, swear {under penalty of perjury} the following facts are {true to the best of my knowledge}:
 fields:
@@ -742,7 +750,7 @@ terms:
       
       The court cannot punish you if you write about things you saw, heard, or felt.  
       The court cannot punish you if you have good reason to believe that what you write is true.
-  - true to the best of your knowledge: |
+  - true to the best of my knowledge: |
       Something is true "to the best of your knowledge" if you were there and saw, heard, or felt it.  
       Something is true to the best of your knowledge if you have good reason to believe it is true.
 ---
