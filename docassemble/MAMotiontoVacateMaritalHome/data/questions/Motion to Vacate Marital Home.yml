@@ -466,7 +466,7 @@ id: add reasons cannot complete
 question:
   This interview is not for you
 subquestion:
-  Based on your answers to the previous questions, we cannot complete your interview. [BR] [BR] ${reason_cannot_complete} [BR] [BR] Contact your Probate and Family Court if you still need to file a motion.
+  Based on your answers to the previous questions, we cannot complete your interview. [BR] [BR] ${reason_cannot_complete} [BR] [BR] [Talk to a lawyer](https://masslegalhelp.org/find-legal-aid) if you need help protecting your family from ${ opposing_party.familiar() }.
 event: cannot_complete_interview
 buttons:
   - Exit: exit
