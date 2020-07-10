@@ -106,10 +106,9 @@ code: |
   opposing_party.has_counsel
   opposing_party.address
   users[0].email
-  date
-  if signed_under_oath == False:
-    cannot_complete_interview
+  date  
   preview_screen
+  users[0].states_above_true  
   basic_questions_signature_flow
   download
 ---
@@ -235,7 +234,15 @@ subquestion: |
   When you sign your name you are declaring, "{under penalty of perjury}” that what you put in your affidavit is {true to the best of your knowledge}.
   
   Do you swear under penalty of perjury that all your answers to the questions in this interview are true, to the best of your knowledge?
-yesno: signed_under_oath
+fields:
+  - no label: users[0].states_above_true
+    datatype: checkboxes
+    minlength: 1
+    choices:
+      - I swear that my answers on this form are the truth under penalties of perjury.
+    validation messages:
+      minlength: |
+        You cannot keep going unless you did your best to tell the truth.
 terms:
   - under penalty of perjury: |
       means you swear your answers are true, as far as you know.  
@@ -339,11 +346,13 @@ fields:
   - Do you have any children with ${opposing_party.familiar()}?: joint_children
     datatype: yesnoradio
 ---
+id: signature
 question: Sign here
 signature: users[0].signature
 under: |
   ${users[0].name}
 ---
+id: has cases
 question:
   Current Cases
 subquestion: 
@@ -352,6 +361,7 @@ fields:
   - no label: current_case
     datatype: yesnoradio
 ---
+id: case type
 question: |
   What type of case do you have in the Probate and Family Court?
 fields:
@@ -362,18 +372,26 @@ fields:
       - Annulment: annulment
       - Something else: other
 ---
+id: qualifying 209c
 question: | # wording - give options 
   Probate and Family Court Case
 subquestion:
   Is your case about the paternity, custody, child support, or parenting time of your children with ${opposing_party.familiar()}?
 yesno: qualifying_209C
 ---
+id: your name
 question:
 	What is your name?
 fields:
 	- First Name: users[0].name.first
+  - Middle name: users[0].name.middle
+    required: False
 	- Last Name: users[0].name.last
+  - Suffix: users[0].name.suffix
+    code: name_suffix()
+    required: False
 ---
+id: your address
 question:
   Your address
 fields:
@@ -388,6 +406,7 @@ fields:
       states_list()
   - Zip Code: users[0].address.zip
 ---
+id: contact info
 question: |
   Your Contact Information 
 fields: 
@@ -396,6 +415,7 @@ fields:
     required: false
   - Phone Number: users[0].phone_number # hide if secret 
 ---
+id: impoundment
 question: | #impoundment
   Keeping your information safe
 subquestion: |
@@ -416,6 +436,7 @@ terms:
   impound: |
     When the court impounds information they keep the information from ${ opposing_party.familiar() } and people who are normally allowed to see it, like the police and court staff.
 ---
+id: op name
 question: | #opname
   Who should the court order to move out or stay away?
 subquestion: |
@@ -424,6 +445,7 @@ fields:
   - First Name: opposing_party.name.first
   - Last Name: opposing_party.name.last
 ---
+id: last lived together date
 question:  #datemovedout
   When did you last live with ${opposing_party.familiar()}?
 subquestion: 
@@ -469,12 +491,13 @@ code:  |
   elif current_case == False:
     reason_cannot_complete = "You said that you do not currently have a case against " + opposing_party.familiar() + " in the Probate and Family Court.  You must file a 'complaint' to start your case before you can file a motion."
   elif case_type_married == 'other':
-    reason_cannot_complete = "You said that your Probate and Family Court case is something other than a divorce, separate support, or annulment.  Since you are married to the other side, can only file this type of motion in a divorce, separate support, or annulment." 
+    reason_cannot_complete = "You said that your Probate and Family Court case is something other than a divorce, separate support, or annulment.  Since you are married to the other side, you can only file this type of motion in a divorce, separate support, or annulment." 
   elif qualifying_209C == False:
     reason_cannot_complete = "You said your case against " + opposing_party.familiar() + " is not about paternity, custody, child support, or parenting time. Since you are not married to " + opposing_party.familiar() + " this interview tool is only available for those types of cases."
   elif signed_under_oath == False:
     reason_cannot_complete = "You must swear that all of your answers in this interview were the truth under penalty of perjury." 
 ---
+id: op address
 question:  #opaddress
   Where does ${opposing_party.familiar()} live?
 fields:
@@ -524,6 +547,7 @@ fields:
   - Zip Code: opposing_counsel.address.zip
     show if: opposing_party.has_counsel
 ---
+id: case info
 question: | #caseinfo
   Your case in Probate and Family Court
 subquestion: |
@@ -536,6 +560,7 @@ fields:
       - 'I filed this case.': User Filed
       - '${opposing_party.name.full()} filed this case.': Opposing Party Filed
 ---
+id: other case count
 question: |
     How many cases against ${opposing_party.familiar()} do you have in Probate and Family Court right now?
 subquestion:
@@ -545,7 +570,7 @@ fields:
       datatype: integer
       min: 1
 --- 
-generic object: DAList
+id: docket number
 question: |
   % if docket_number.target_number == 1:
   What is the docket number of your case against ${opposing_party.familiar()} in Probate and Family Court?
@@ -555,6 +580,7 @@ question: |
 fields:
     - Docket number: docket_number[i]
 ---
+id: marriage date
 question: | #datemarried
   Date of marriage
 subquestion: 
@@ -563,6 +589,7 @@ fields:
   - Date: marriage_date
     datatype: date
 ---
+id: how many children
 question: | #howmanykids
   Children with ${opposing_party.familiar()}
 subquestion: 
@@ -572,6 +599,7 @@ fields:
     datatype: integer
     min: 0
 ---
+id: where do children live
 question: |
   Who do your children with ${opposing_party.familiar()} live with right now?
 fields: 
@@ -592,6 +620,7 @@ code: |
   if children_live_with_one_party == "user" or "opposing party":
     children_live_with_other = DAEmpty()
 ---
+id: other children
 question: | #otherkids
   Other children
 subquestion:
@@ -630,6 +659,7 @@ code: |
   elif person_in_danger['children'] and not person_in_danger['user']:
     person_in_danger_motion = "the health, safety, and welfare of " + user_role + "'s children." 
 ---
+id: why need to vacate
 question: Why do you need ${opposing_party.familiar()} to move out or stay away from your home?
 subquestion: |
   This is your chance to tell all the reasons that you or your children are at risk if ${opposing_party.familiar()} does not leave. 
@@ -642,6 +672,7 @@ fields:
     input type: area
     rows: 10
 ---
+id: why moved
 question: 
   Why did you move out of your home?
 Fields:
@@ -656,10 +687,12 @@ code: |
   if not include_reason_living_situation_unsafe:
     reason_living_situation_unsafe = DAEmpty()
 ---
+id: is unsafe
 question: 
   Is your current living situation unsafe? 
 yesno: user_living_situation_unsafe
 ---
+id: why unsafe
 question: 
   Why is your living situation unsafe?
 fields:
@@ -668,6 +701,7 @@ fields:
   - My current living situation is not safe because...: reason_living_situation_unsafe
     show if: include_reason_living_situation_unsafe
 ---
+id: is this an emergency
 question: |
   Is this an emergency?
 subquestion: |
@@ -678,6 +712,7 @@ fields:
   - Is this an emergency?: emergency
     datatype: yesnoradio 
 ---
+id: signature date
 question: 
   When do you plan to file this motion?
 # subquestion: 
@@ -687,6 +722,7 @@ fields:
     datatype: date
     default: ${today().format("yyyy-MM-dd")}
 ---
+id: affidavit review
 question: 
   Affidavit Review
 subquestion: |
