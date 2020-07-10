@@ -726,7 +726,7 @@ id: affidavit review
 question: 
   Affidavit Review
 subquestion: |
-  This is a rough draft of what could go into your affidavit.  You can make any changes or add any more information here that you want the judge to know. Remember, everything you put here will be under oath. 
+  This is a rough draft of your affidavit.  You can make any changes or add any more information here that you want the judge to know. Style note: each paragraph below will be displayed as part of a numbered list. The court expects short declarative paragraphs. Remember, everything you put here will be under oath. 
   
   I, ${users[0].name.full()}, swear {under penalty of perjury} the following facts are {true to the best of my knowledge}:
 fields:
