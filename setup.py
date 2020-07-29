@@ -43,9 +43,9 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
     return out
 
 setup(name='docassemble.MAMotiontoVacateMaritalHome',
-      version='0.0.6',
+      version='0.0.7',
       description=('A docassemble extension.'),
-      long_description='# docassemble.MAMotiontoVacateMaritalHome\r\n\r\nA docassemble extension.\r\n\r\n## Author\r\n\r\nSystem Administrator, admin@admin.com\r\n\r\n',
+      long_description='# docassemble.MAMotiontoVacateMaritalHome\r\n\r\nA docassemble extension.\r\n\r\n## Author\r\n\r\nKate Barry\r\n',
       long_description_content_type='text/markdown',
       author='Kate Barry',
       author_email='kbarry@gbls.org',

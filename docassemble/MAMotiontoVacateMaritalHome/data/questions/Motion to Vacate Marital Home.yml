@@ -17,7 +17,6 @@ code: |
   allowed_courts = ["Probate and Family Court"]
 ---
 objects:
-  opposing_party: Individual
   opposing_counsel: Individual
   vacate_address: Address
   docket_number: DAList.using(ask_number=True)
@@ -29,7 +28,9 @@ code: |
   basic_questions_intro_screen 
   intro_screen_seen
   users[0].name.first
-  opposing_party.name.first
+  other_parties.ask_number=True
+  other_parties.target_number=1
+  other_parties[0].name.first
   if not married_to_opposing_party and not joint_children:
     cannot_complete_interview
   if not prerequisites:
@@ -84,9 +85,9 @@ code: |
       reason_living_situation_unsafe # do you want to tell
   reasons_for_danger
   if who_lives_at_vacate_address['opposing party']:
-    opposing_party.address = vacate_address 
+    other_parties[0].address = vacate_address 
   if not who_lives_at_vacate_address['opposing party']:
-    opposing_party.address
+    other_parties[0].address
   if who_lives_at_vacate_address['user']:
     users[0].address = vacate_address
   else:
@@ -103,14 +104,47 @@ code: |
   who_filed_case
   docket_number.target_number
   docket_number.gather()
-  opposing_party.has_counsel
-  opposing_party.address
+  other_parties[0].has_counsel
+  other_parties[0].address
   users[0].email
   date  
+  if not emergency and ready_to_serve:
+    service_date
+    service_method
   preview_screen
   users[0].states_above_true  
   basic_questions_signature_flow
   download
+---
+question: |
+  Serving ${ other_parties.familiar() }
+subquestion: |
+  You need to give a copy of this form to ${ other_parties.familiar() }.
+  This is called *service*.
+  
+  The court may be able to help you serve ${ other_parties.familiar() }
+  because of the Covid-19 emergency. You can call them to find out more.
+  
+  Do you know when you will give a copy of this form to ${ other_parties.familiar() } ?
+yesno: ready_to_serve
+---
+id: service
+question: |
+  Service on ${other_parties}
+fields:
+  - When will you serve ${other_parties.familiar()}?: service_date
+    datatype: date
+  - How will you serve them?: service_method
+    datatype: radio
+    choices:
+      - By email: electronic mail
+      - By mail (with postage paid by me): first class mail, postage prepaid
+      - other: other
+  - Other method: service_method
+    show if:
+      variable: service_method
+      is: other
+
 ---
 code: |
   users.there_is_another = False 
@@ -125,7 +159,7 @@ code: |
   if who_lives_at_vacate_address['user']:
     users[0].address = vacate_address
   if who_lives_at_vacate_address['opposing party']:
-    opposing_party.address = vacate_address
+    other_parties[0].address = vacate_address
 ---
 code: | #change in the docx
   if domestic_violence_shelter or address_is_impounded:
@@ -140,11 +174,11 @@ code: | #pleadingtitle
 code:  | 
   if who_filed_case == "User Filed":
     plaintiff = users
-    defendant = opposing_party
+    defendant = other_parties[0]
     user_role = 'Plaintiff'
     opposing_party_role = 'Defendant'
   else:
-    plaintiff = opposing_party
+    plaintiff = other_parties[0]
     defendant = users
     user_role = 'Defendant'
     opposing_party_role = 'Plaintiff'
@@ -197,13 +231,13 @@ subquestion: |
    Are all of these things true? 
    
    % if married_to_opposing_party: 
-   * You already have a case against ${opposing_party.familiar()} in the Probate and Family Court. 
-   * You live with or you used to live with ${opposing_party.familiar()}. 
-   * You need ${opposing_party.familiar()} to leave the address you currently live at together or the last address you lived at together. 
+   * You already have a case against ${other_parties[0].familiar()} in the Probate and Family Court. 
+   * You live with or you used to live with ${other_parties[0].familiar()}. 
+   * You need ${other_parties[0].familiar()} to leave the address you currently live at together or the last address you lived at together. 
    * You need to file this motion to protect the health, safety, or welfare of you or your children.
    % else:
-   * You already have a case against ${opposing_party.familiar()} in the Probate and Family Court. 
-   * You need ${opposing_party.familiar()} to leave or stay away from your address.  
+   * You already have a case against ${other_parties[0].familiar()} in the Probate and Family Court. 
+   * You need ${other_parties[0].familiar()} to leave or stay away from your address.  
    * You need to file this motion to protect the health, safety, or welfare of you or your children.
    % endif
 
@@ -214,7 +248,7 @@ id: Affidavit warning
 question: |
   Affidavit
 subquestion: |
-  Explain to the judge what has happened and why you need a court order to make  ${ opposing_party.familiar() } move out or stay away from your home.
+  Explain to the judge what has happened and why you need a court order to make  ${ other_parties[0].familiar() } move out or stay away from your home.
   
   The answers you give in this interview help you write an "affidavit."  An affidavit is a written statement that tells the judge your story.  It is your chance to tell the judge what has happened and why you need to file this motion. 
   
@@ -257,11 +291,11 @@ terms:
 ---
 id: vacate address
 question: |
-  What is the address you need ${opposing_party.familiar()} to stay away from?
+  What is the address you need ${other_parties[0].familiar()} to stay away from?
 subquestion: |
   % if married_to_opposing_party:
-  This can be the address where you live with ${opposing_party.familiar()} now, **or**
-  where you last lived with ${opposing_party.familiar()}. 
+  This can be the address where you live with ${other_parties[0].familiar()} now, **or**
+  where you last lived with ${other_parties[0].familiar()}. 
   % endif
 fields:
   - Street Address: vacate_address.address
@@ -313,23 +347,23 @@ fields:
     datatype: checkboxes
     choices:
       - I live there: user
-      - ${opposing_party.familiar()} lives there.: opposing party
+      - ${other_parties[0].familiar()} lives there.: opposing party
 
 ---
 id: parties cohabit
 question: #livingtogether
-  Living With ${opposing_party.familiar()}
+  Living With ${other_parties[0].familiar()}
 fields:
-  - Did you ever live with ${opposing_party.familiar()}?: ever_lived_together
+  - Did you ever live with ${other_parties[0].familiar()}?: ever_lived_together
     datatype: yesnoradio
-  - Is ${vacate_address.address} the last place you lived with ${opposing_party.familiar()}?: parties_lived_at_vacate_address
+  - Is ${vacate_address.address} the last place you lived with ${other_parties[0].familiar()}?: parties_lived_at_vacate_address
     datatype: yesnoradio
     show if: ever_lived_together
 ---
 id: whose safety will be protected
 question: |
   Health, safety, or welfare
-subquestion: Whose health, safety, or welfare will be protected by making  ${opposing_party.familiar()}  leave ${vacate_address.address}?
+subquestion: Whose health, safety, or welfare will be protected by making  ${other_parties[0].familiar()}  leave ${vacate_address.address}?
 fields: 
   - check all that apply: person_in_danger
     datatype: checkboxes
@@ -339,11 +373,11 @@ fields:
 ---
 id: relationship
 question: #relationship
-  Your relationship to ${opposing_party.familiar()}
+  Your relationship to ${other_parties[0].familiar()}
 fields:
-  - Are you married to ${opposing_party.familiar()}?: married_to_opposing_party
+  - Are you married to ${other_parties[0].familiar()}?: married_to_opposing_party
     datatype: yesnoradio
-  - Do you have any children with ${opposing_party.familiar()}?: joint_children
+  - Do you have any children with ${other_parties[0].familiar()}?: joint_children
     datatype: yesnoradio
 ---
 id: signature
@@ -356,7 +390,7 @@ id: has cases
 question:
   Current Cases
 subquestion: 
-  Do you currently have any Probate and Family Court cases against ${opposing_party.familiar()}?
+  Do you currently have any Probate and Family Court cases against ${other_parties[0].familiar()}?
 fields: 
   - no label: current_case
     datatype: yesnoradio
@@ -376,7 +410,7 @@ id: qualifying 209c
 question: | # wording - give options 
   Probate and Family Court Case
 subquestion:
-  Is your case about the paternity, custody, child support, or parenting time of your children with ${opposing_party.familiar()}?
+  Is your case about the paternity, custody, child support, or parenting time of your children with ${other_parties[0].familiar()}?
 yesno: qualifying_209C
 ---
 id: your name
@@ -419,9 +453,9 @@ id: impoundment
 question: | #impoundment
   Keeping your information safe
 subquestion: |
-  Normally, ${opposing_party.familiar()} will see your address and contact information.  
+  Normally, ${other_parties[0].familiar()} will see your address and contact information.  
   
-  If you live in a domestic violence shelter or the court has already allowed you to  "{impound}" your address, ${opposing_party.familiar()} will **not** be able to see this information.  
+  If you live in a domestic violence shelter or the court has already allowed you to  "{impound}" your address, ${other_parties[0].familiar()} will **not** be able to see this information.  
   
 fields: # fix this in the Docx
   - Do you live in a domestic violence shelter? : domestic_violence_shelter
@@ -434,7 +468,7 @@ fields: # fix this in the Docx
       val("address_is_impounded") || val("domestic_violence_shelter")
 terms: 
   impound: |
-    When the court impounds information they keep the information from ${ opposing_party.familiar() } and people who are normally allowed to see it, like the police and court staff.
+    When the court impounds information they keep the information from ${ other_parties[0].familiar() } and people who are normally allowed to see it, like the police and court staff.
 ---
 id: op name
 question: | #opname
@@ -442,14 +476,14 @@ question: | #opname
 subquestion: |
   What is the name of the other person in your family law case?
 fields: 
-  - First Name: opposing_party.name.first
-  - Last Name: opposing_party.name.last
+  - First Name: other_parties[0].name.first
+  - Last Name: other_parties[0].name.last
 ---
 id: last lived together date
 question:  #datemovedout
-  When did you last live with ${opposing_party.familiar()}?
+  When did you last live with ${other_parties[0].familiar()}?
 subquestion: 
-  What was the last date that you and ${opposing_party.familiar()} lived together at ${vacate_address.on_one_line()}?
+  What was the last date that you and ${other_parties[0].familiar()} lived together at ${vacate_address.on_one_line()}?
 fields:
   - I do not know the date.: date_unknown
     datatype: yesno
@@ -466,7 +500,7 @@ id: add reasons cannot complete
 question:
   This interview is not for you
 subquestion:
-  Based on your answers to the previous questions, we cannot complete your interview. [BR] [BR] ${reason_cannot_complete} [BR] [BR] [Talk to a lawyer](https://masslegalhelp.org/find-legal-aid) if you need help protecting your family from ${ opposing_party.familiar() }.
+  Based on your answers to the previous questions, we cannot complete your interview. [BR] [BR] ${reason_cannot_complete} [BR] [BR] [Talk to a lawyer](https://masslegalhelp.org/find-legal-aid) if you need help protecting your family from ${ other_parties[0].familiar() }.
 event: cannot_complete_interview
 buttons:
   - Exit: exit
@@ -474,78 +508,78 @@ buttons:
 ---
 code:  | 
   if married_to_opposing_party == False and joint_children == False:
-    reason_cannot_complete = "You said you are not married to " + opposing_party.familiar() + " **and** you do not have any children with " + opposing_party.familiar() + ". To file this motion you need to be  married to " + opposing_party.familiar() + " or have a child with " + opposing_party.familiar() + "." 
+    reason_cannot_complete = "You said you are not married to " + other_parties[0].familiar() + " **and** you do not have any children with " + other_parties[0].familiar() + ". To file this motion you need to be  married to " + other_parties[0].familiar() + " or have a child with " + other_parties[0].familiar() + "." 
   elif not prerequisites:
     if married_to_opposing_party:
-      reason_cannot_complete = "To file this motion all these things must be true:[BR] [BR] You already have a case against " + opposing_party.familiar() + " in the Probate and Family Court.[BR] [BR] You live with or you used to live with " + opposing_party.familiar() + ".[BR] [BR] You need " + opposing_party.familiar() + " to leave the address you currently live at together or the last address you lived at together. And[BR] [BR] You need to file this motion to protect the health, safety, or welfare of you or your children.[BR] [BR]  You said they are not all true."
+      reason_cannot_complete = "To file this motion all these things must be true:[BR] [BR] You already have a case against " + other_parties[0].familiar() + " in the Probate and Family Court.[BR] [BR] You live with or you used to live with " + other_parties[0].familiar() + ".[BR] [BR] You need " + other_parties[0].familiar() + " to leave the address you currently live at together or the last address you lived at together. And[BR] [BR] You need to file this motion to protect the health, safety, or welfare of you or your children.[BR] [BR]  You said they are not all true."
     else:
-      reason_cannot_complete = "To file this motion all these things must be true.[BR] [BR]You already have a case against " + opposing_party.familiar() + " in the Probate and Family Court.[BR] [BR]You need " + opposing_party.familiar() + " to leave or stay away from your address. And[BR] [BR] You need to file this motion to protect the health, safety, or welfare of you or your children.[BR] [BR] You said they are not all true."
+      reason_cannot_complete = "To file this motion all these things must be true.[BR] [BR]You already have a case against " + other_parties[0].familiar() + " in the Probate and Family Court.[BR] [BR]You need " + other_parties[0].familiar() + " to leave or stay away from your address. And[BR] [BR] You need to file this motion to protect the health, safety, or welfare of you or your children.[BR] [BR] You said they are not all true."
   elif who_lives_at_vacate_address.all_false():
-    reason_cannot_complete = "You said that neither you nor " + opposing_party.familiar() + " live at the address you want " + opposing_party.familiar() + " to leave.  One of you must still live there to use this interview tool."
+    reason_cannot_complete = "You said that neither you nor " + other_parties[0].familiar() + " live at the address you want " + other_parties[0].familiar() + " to leave.  One of you must still live there to use this interview tool."
   elif married_to_opposing_party and not ever_lived_together:
-    reason_cannot_complete = "You said that you and " + opposing_party.familiar() + " have never lived together.  You can only use this interview to ask " + opposing_party.familiar() + " to leave somewhere you have lived together."
+    reason_cannot_complete = "You said that you and " + other_parties[0].familiar() + " have never lived together.  You can only use this interview to ask " + other_parties[0].familiar() + " to leave somewhere you have lived together."
   elif married_to_opposing_party and not parties_lived_at_vacate_address:
-    reason_cannot_complete = "You said that " + vacate_address.address + " isn't the last place you and " + opposing_party.familiar() + " lived together.  You can only use this interview to ask " + opposing_party.familiar() + " to leave the last place you lived together."
+    reason_cannot_complete = "You said that " + vacate_address.address + " isn't the last place you and " + other_parties[0].familiar() + " lived together.  You can only use this interview to ask " + other_parties[0].familiar() + " to leave the last place you lived together."
   elif person_in_danger.all_false():
-    reason_cannot_complete = "You said that you do not need " + opposing_party.familiar() + " to leave in order to protect the health, safety, or welfare of you or your children.  You can only use this interview if you need to protect the health, safety, or welfare of you or your children." 
+    reason_cannot_complete = "You said that you do not need " + other_parties[0].familiar() + " to leave in order to protect the health, safety, or welfare of you or your children.  You can only use this interview if you need to protect the health, safety, or welfare of you or your children." 
   elif current_case == False:
-    reason_cannot_complete = "You said that you do not currently have a case against " + opposing_party.familiar() + " in the Probate and Family Court.  You must file a 'complaint' to start your case before you can file a motion."
+    reason_cannot_complete = "You said that you do not currently have a case against " + other_parties[0].familiar() + " in the Probate and Family Court.  You must file a 'complaint' to start your case before you can file a motion."
   elif case_type_married == 'other':
     reason_cannot_complete = "You said that your Probate and Family Court case is something other than a divorce, separate support, or annulment.  Since you are married to the other side, you can only file this type of motion in a divorce, separate support, or annulment." 
   elif qualifying_209C == False:
-    reason_cannot_complete = "You said your case against " + opposing_party.familiar() + " is not about paternity, custody, child support, or parenting time. Since you are not married to " + opposing_party.familiar() + " this interview tool is only available for those types of cases."
+    reason_cannot_complete = "You said your case against " + other_parties[0].familiar() + " is not about paternity, custody, child support, or parenting time. Since you are not married to " + other_parties[0].familiar() + " this interview tool is only available for those types of cases."
   elif signed_under_oath == False:
     reason_cannot_complete = "You must swear that all of your answers in this interview were the truth under penalty of perjury." 
 ---
 id: op address
 question:  #opaddress
-  Where does ${opposing_party.familiar()} live?
+  Where does ${other_parties[0].familiar()} live?
 fields:
-  - Street address: opposing_party.address.address
+  - Street address: other_parties[0].address.address
     address autocomplete: True
-  - Unit: opposing_party.address.unit
+  - Unit: other_parties[0].address.unit
     required: false
-  - City: opposing_party.address.city
-  - State: opposing_party.address.state
+  - City: other_parties[0].address.city
+  - State: other_parties[0].address.state
     code: |
       states_list()
     default: MA
-  - Zip Code: opposing_party.address.zip
+  - Zip Code: other_parties[0].address.zip
 ---
 comment: |
   autocomplete address doesn't seem to be working
 id: opposing counsel
 question: | 
- Does ${opposing_party.familiar()} have a lawyer?
+ Does ${other_parties[0].familiar()} have a lawyer?
 
 fields:
-  - no label: opposing_party.has_counsel
+  - no label: other_parties[0].has_counsel
     datatype: yesnoradio
   - note: |
       ### What is the lawyer's ...
-    show if: opposing_party.has_counsel
+    show if: other_parties[0].has_counsel
   - First name: opposing_counsel.name.first
-    show if: opposing_party.has_counsel 
+    show if: other_parties[0].has_counsel 
   - Last name: opposing_counsel.name.last
-    show if: opposing_party.has_counsel
+    show if: other_parties[0].has_counsel
   - Law firm: opposing_counsel.firm
     required: False
-    show if: opposing_party.has_counsel
+    show if: other_parties[0].has_counsel
   - Street Address: opposing_counsel.address.address
     address autocomplete: True
-    show if: opposing_party.has_counsel 
+    show if: other_parties[0].has_counsel 
   - Unit: opposing_counsel.address.unit
     required: false
-    show if: opposing_party.has_counsel
+    show if: other_parties[0].has_counsel
   - City: opposing_counsel.address.city
-    show if: opposing_party.has_counsel 
+    show if: other_parties[0].has_counsel 
   - State: opposing_counsel.address.state
     default: MA
     code: |
       states_list()
-    show if: opposing_party.has_counsel 
+    show if: other_parties[0].has_counsel 
   - Zip Code: opposing_counsel.address.zip
-    show if: opposing_party.has_counsel
+    show if: other_parties[0].has_counsel
 ---
 id: case info
 question: | #caseinfo
@@ -555,14 +589,15 @@ subquestion: |
 fields:
   - Who filed the case?: who_filed_case
     help: |
-      If you filed the "complaint," you filed this case.  If ${opposing_party.name.familiar()} filed the complaint, they filed the case.
+      If you filed the "complaint," you filed this case.  If ${other_parties[0].name.familiar()} filed the complaint, they filed the case.
+    datatype: radio
     choices:
       - 'I filed this case.': User Filed
-      - '${opposing_party.name.full()} filed this case.': Opposing Party Filed
+      - '${other_parties[0].name.full()} filed this case.': Opposing Party Filed
 ---
 id: other case count
 question: |
-    How many cases against ${opposing_party.familiar()} do you have in Probate and Family Court right now?
+    How many cases against ${other_parties[0].familiar()} do you have in Probate and Family Court right now?
 subquestion:
     Each child that you have a case about will have their own separate case.
 fields:
@@ -573,10 +608,14 @@ fields:
 id: docket number
 question: |
   % if docket_number.target_number == 1:
-  What is the docket number of your case against ${opposing_party.familiar()} in Probate and Family Court?
+  What is the docket number of your case against ${other_parties[0].familiar()} in Probate and Family Court?
   % else:
-  What is the docket number of your ${ordinal(i)} case against ${opposing_party.familiar()} in Probate and Family Court?
+  What is the docket number of your ${ordinal(i)} case against ${other_parties[0].familiar()} in Probate and Family Court?
   % endif
+subquestion: |
+  Write the docket number the same way it appears on any paperwork 
+  you already got about the existing case.
+  For example: BR19D1234DR.
 fields:
     - Docket number: docket_number[i]
 ---
@@ -584,16 +623,16 @@ id: marriage date
 question: | #datemarried
   Date of marriage
 subquestion: 
-  When did you marry ${opposing_party.familiar()}?
+  When did you marry ${other_parties[0].familiar()}?
 fields: 
   - Date: marriage_date
     datatype: date
 ---
 id: how many children
 question: | #howmanykids
-  Children with ${opposing_party.familiar()}
+  Children with ${other_parties[0].familiar()}
 subquestion: 
-  You said you have children with ${opposing_party.familiar()}.  
+  You said you have children with ${other_parties[0].familiar()}.  
 fields:
   - How many?: joint_children_number
     datatype: integer
@@ -601,12 +640,12 @@ fields:
 ---
 id: where do children live
 question: |
-  Who do your children with ${opposing_party.familiar()} live with right now?
+  Who do your children with ${other_parties[0].familiar()} live with right now?
 fields: 
   - Who do the children live with?: children_live_with_one_party
     choices:
       - Me: user
-      - ${opposing_party.familiar()}: opposing party
+      - ${other_parties[0].familiar()}: opposing party
       - Other: other
   - Do you want to tell the judge who your children are living with?: include_children_living_situation
     datatype: yesnoradio
@@ -624,9 +663,9 @@ id: other children
 question: | #otherkids
   Other children
 subquestion:
-  Tell us about any children you have that ${opposing_party.familiar()} is not the parent of.
+  Tell us about any children you have that ${other_parties[0].familiar()} is not the parent of.
 fields:
-  - Do you have any children that ${opposing_party.familiar()} is not the parent of?: user_has_additional_children
+  - Do you have any children that ${other_parties[0].familiar()} is not the parent of?: user_has_additional_children
     datatype: yesnoradio
   - Do any of them live with you?: user_lives_with_additional_children
     datatype: yesnoradio
@@ -645,26 +684,26 @@ code: |
 ---
 code: |
   if person_in_danger['user'] and not person_in_danger['children']:
-    person_in_danger_affidavit = "My health, safety, or welfare is in danger if the court does not order " + opposing_party.familiar() + " to leave the home."
+    person_in_danger_affidavit = "My health, safety, or welfare is in danger if the court does not order " + other_parties[0].familiar() + " to leave the home."
   elif person_in_danger.all_true('user','children'):
-    person_in_danger_affidavit = "My health, safety, or welfare of and that of my children is in danger if the court does not order " + opposing_party.familiar() + " to leave the home."
+    person_in_danger_affidavit = "My health, safety, or welfare of and that of my children is in danger if the court does not order " + other_parties[0].familiar() + " to leave the home."
   elif person_in_danger['children'] and not person_in_danger['user']:
-    person_in_danger_affidavit = "The health, safety, or welfare of my children is in danger if if the court does not order " + opposing_party.familiar() + " to leave the home."
+    person_in_danger_affidavit = "The health, safety, or welfare of my children is in danger if if the court does not order " + other_parties[0].familiar() + " to leave the home."
 ---
 code: | 
   if person_in_danger['user'] and not person_in_danger['children']:
     person_in_danger_motion = "their health, safety, or welfare"
   elif person_in_danger.all_true('user','children'):
-    person_in_danger_motion = "the health, safety, or welfare of " + user_role + " and their children." 
+    person_in_danger_motion = "the health, safety, or welfare of " + user_role + " and their children" 
   elif person_in_danger['children'] and not person_in_danger['user']:
-    person_in_danger_motion = "the health, safety, and welfare of " + user_role + "'s children." 
+    person_in_danger_motion = "the health, safety, and welfare of " + user_role + "'s children" 
 ---
 id: why need to vacate
-question: Why do you need ${opposing_party.familiar()} to move out or stay away from your home?
+question: Why do you need ${other_parties[0].familiar()} to move out or stay away from your home?
 subquestion: |
-  This is your chance to tell all the reasons that you or your children are at risk if ${opposing_party.familiar()} does not leave. 
+  This is your chance to tell all the reasons that you or your children are at risk if ${other_parties[0].familiar()} does not leave. 
   
-     The judge in your case will want to know why you or your children are in danger from ${opposing_party.familiar()} staying at or coming to your home. You can talk about things like physical or emotional abuse, property damage, substance use, or anything else that shows why you or your children are in danger from ${opposing_party.familiar()}.  
+     The judge in your case will want to know why you or your children are in danger from ${other_parties[0].familiar()} staying at or coming to your home. You can talk about things like physical or emotional abuse, property damage, substance use, or anything else that shows why you or your children are in danger from ${other_parties[0].familiar()}.  
      
      Try to be as specific as possible.  Include specific incidents whenever possible, including when and where they took place.
 fields:
@@ -705,7 +744,7 @@ id: is this an emergency
 question: |
   Is this an emergency?
 subquestion: |
-  If this is an emergency, you can ask the Court to order ${opposing_party.familiar()} move out or stay away from ${vacate_address.on_one_line()} right away.  
+  If this is an emergency, you can ask the Court to order ${other_parties[0].familiar()} move out or stay away from ${vacate_address.on_one_line()} right away.  
   
   If this is not an emergency, the Court will schedule a hearing on this motion sometime in the future.  
 fields:
@@ -757,25 +796,25 @@ terms:
 template: affidavit_draft
 content: |
   % if married_to_opposing_party:
-  I married ${opposing_party.name.full()} on ${marriage_date}.
+  I married ${other_parties[0].name.full()} on ${marriage_date}.
   %  endif 
   % if joint_children:
-  I have ${joint_children_number} ${joint_child_or_children} with ${opposing_party.name.full()}.
+  I have ${joint_children_number} ${joint_child_or_children} with ${other_parties[0].name.full()}.
   % endif
   % if user_lives_with_additional_children:
   I also have ${user_lives_with_additional_children_number} ${additional_child_or_children} from another relationship that ${additional_live_or_lives} with me. 
   % endif
   % if parties_live_together_now:
-  ${opposing_party.familiar()} and I live together at ${vacate_address.on_one_line()}.
+  ${other_parties[0].familiar()} and I live together at ${vacate_address.on_one_line()}.
   % elif parties_lived_at_vacate_address:
-  ${opposing_party.familiar()} and I last lived together on or about ${last_lived_together_date} at ${vacate_address.on_one_line()}.
+  ${other_parties[0].familiar()} and I last lived together on or about ${last_lived_together_date} at ${vacate_address.on_one_line()}.
   % else:
-  I have never lived with ${opposing_party.familiar()} but I need them to stay away from my home.
+  I have never lived with ${other_parties[0].familiar()} but I need them to stay away from my home.
   % endif
   % if parties_lived_at_vacate_address and who_lives_at_vacate_address['user'] and not who_lives_at_vacate_address['opposing party']:
-  I still live at ${vacate_address.line_one()}. ${opposing_party.familiar()} has moved out  to  ${opposing_party.address.on_one_line()}.  
+  I still live at ${vacate_address.line_one()}. ${other_parties[0].familiar()} has moved out  to  ${other_parties[0].address.on_one_line()}.  
   % elif parties_lived_at_vacate_address and who_lives_at_vacate_address['opposing party'] and not who_lives_at_vacate_address['user']:
-  ${opposing_party} still lives at ${vacate_address.line_one()}.  
+  ${other_parties[0]} still lives at ${vacate_address.line_one()}.  
   % if include_reasons_for_leaving:
   I left ${vacate_address.on_one_line()} because ${reasons_for_leaving}. 
   % endif
@@ -786,7 +825,7 @@ content: |
   % if joint_children and not parties_live_together_now and children_live_with_one_party == "user":
   Our ${joint_child_or_children}  ${joint_live_or_lives} with me right now.
   % elif joint_children and not parties_live_together_now and children_live_with_one_party == "opposing party":
-  Our ${joint_child_or_children}  ${joint_live_or_lives} with ${opposing_party.familiar()} right now.
+  Our ${joint_child_or_children}  ${joint_live_or_lives} with ${other_parties[0].familiar()} right now.
   % elif joint_children and not parties_live_together_now and children_live_with_one_party == "other" and include_children_living_situation:
   ${children_living_situation} 
   % endif
