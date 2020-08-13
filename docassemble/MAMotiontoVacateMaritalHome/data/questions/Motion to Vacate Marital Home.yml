@@ -117,6 +117,7 @@ code: |
   preview_screen
   users[0].states_above_true  
   basic_questions_signature_flow
+  users[0].signature
   download
 ---
 question: |
@@ -898,23 +899,24 @@ subquestion: |
   [:file-download: Download with cover page](${final_form_to_file.url_for()})    
   % endif
 progress: 100
-attachment code: Motion_to_Vacate_Marital_Home_Variable
+attachment code: attachments['final']
 section: download
 ---
 code: |
-  form_to_sign = pdf_concatenate(Motion_to_Vacate_Marital_Home_Variable_preview, filename="Motion to Vacate Marital Home (Preview).pdf")
+  form_to_sign = pdf_concatenate(attachments['preview'], filename="Motion to Vacate Marital Home (Preview).pdf")
+---
+reconsider: True
+code: |
+  form_to_file_no_cover = pdf_concatenate(attachments['final'], filename="Motion to Vacate Marital Home.pdf")
 ---
 code: |
-  form_to_file_no_cover = pdf_concatenate(Motion_to_Vacate_Marital_Home_Variable, filename="Motion to Vacate Marital Home.pdf")
+  package_title = "Motion to Vacate Marital Home"
+---
+objects:
+  - attachments: DADict
 ---
 attachment:
 	- name: Motion to Vacate Marital Home
-	  variable name: Motion_to_Vacate_Marital_Home_Variable_preview
-	  filename: Motion_to_Vacate_Marital_Home
-	  docx template file: Motion_to_Vacate_Marital_Home.docx
----
-attachment:
-	- name: Motion to Vacate Marital Home
-	  variable name: Motion_to_Vacate_Marital_Home_Variable
+	  variable name: attachments[i] # preview or final
 	  filename: Motion_to_Vacate_Marital_Home
 	  docx template file: Motion_to_Vacate_Marital_Home.docx
