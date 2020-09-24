@@ -28,6 +28,7 @@ comment: |
 	## Mandatory block that determines interview order.
 mandatory: True
 code: |
+  form_approved_for_email_filing = False
   basic_questions_intro_screen 
   intro_screen_seen
   users[0].name.first
@@ -852,6 +853,29 @@ subquestion: |
 
 progress: 95
 ---
+if: not form_approved_for_email_filing
+id: download form do not email
+event: download
+decoration: file-download
+question: |
+  Review, download, and file form
+subquestion: |
+  Your form is ready. You still need to call the court
+  to figure out the best way to file it and to get a copy to ${ other_parties}.
+    
+  1. Click the preview image below to open the form in a new window.
+  2. Download and save or print a copy of this form for your 
+  records.
+  3. Call the clerk of the ${courts[0]} at ${ courts[0].phone } or call the emergency help line
+  at 833-912-6878 to get help filing this form. The clerk may ask you
+  to email it, e-file it, or to print and mail it.
+
+  ${ form_to_file_no_cover }  
+progress: 100
+attachment code: attachments['final']
+section: download  
+---
+if: form_approved_for_email_filing
 event: download
 id: download form
 comment: |
