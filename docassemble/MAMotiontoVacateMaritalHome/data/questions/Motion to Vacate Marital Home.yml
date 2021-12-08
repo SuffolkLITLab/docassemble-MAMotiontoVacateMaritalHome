@@ -3,7 +3,8 @@ features:
   question help button: True
 ---
 include:
-  - docassemble.MAVirtualCourt:basic-questions.yml
+  - docassemble.AssemblyLine:al_package.yml
+  - docassemble.MassAccess:massaccess.yml
 ---
 metadata:
 	title: |
@@ -12,6 +13,11 @@ metadata:
 		- Family
 	description: |
 		An interview to ask the court to order the other side in your family law case to leave your home 
+  authors:    
+    - Kate Barry
+---
+code: |
+  github_repo_name = "docassemble-MAMotiontoVacateMaritalHome"
 ---
 code: |
   interview_short_title = "Ask the court to tell someone to leave your home"
@@ -104,7 +110,7 @@ code: |
   else:
     domestic_violence_shelter
   users[0].address.geolocate()    
-  courts[0].address.county
+  trial_court.address.county
   who_filed_case
   docket_number.target_number
   docket_number.gather()
@@ -533,7 +539,7 @@ code:  |
     reason_cannot_complete = "You said that your Probate and Family Court case is something other than a divorce, separate support, or annulment.  Since you are married to the other side, you can only file this type of motion in a divorce, separate support, or annulment." 
   elif qualifying_209C == False:
     reason_cannot_complete = "You said your case against " + other_parties[0].familiar() + " is not about paternity, custody, child support, or parenting time. Since you are not married to " + other_parties[0].familiar() + " this interview tool is only available for those types of cases."
-  elif signed_under_oath == False:
+  elif users[0].states_above_true == False:
     reason_cannot_complete = "You must swear that all of your answers in this interview were the truth under penalty of perjury." 
 ---
 id: op address
@@ -838,7 +844,6 @@ content: |
   ${reasons_for_danger} 
 ---
 id: review before signature
-need: form_to_sign
 continue button field: preview_screen
 question: |
   Nearly finished
@@ -849,11 +854,11 @@ subquestion: |
   Do not forget to come back to this page for the final step of signing and sending 
   the form to the court. 
   
-   ${form_to_sign }
+   ${ motion_to_vacate_marital_home_attachment.as_pdf(key='preview') }
 
 progress: 95
 ---
-if: not form_approved_for_email_filing
+# if: not form_approved_for_email_filing
 id: download form do not email
 event: download
 decoration: file-download
@@ -866,81 +871,79 @@ subquestion: |
   1. Click the preview image below to open the form in a new window.
   2. Download and save or print a copy of this form for your 
   records.
-  3. Call the clerk of the ${courts[0]} at ${ courts[0].phone } or call the emergency help line
+  3. Call the clerk of the ${ trial_court } at ${ trial_court.phone } or call the emergency help line
   at 833-912-6878 to get help filing this form. The clerk may ask you
   to email it, e-file it, or to print and mail it.
-
-  ${ form_to_file_no_cover }  
+  
+  ${ al_user_bundle.download_list_html() }
+  
+  ${ al_user_bundle.send_button_html() }
 progress: 100
-attachment code: attachments['final']
 section: download  
 ---
-if: form_approved_for_email_filing
-event: download
-id: download form
-comment: |
-  The attachment email screen relies on final_form_to_file being defined. This
-  will be built from the interview_metadata dictionary's contents, but if you
-  add any addenda you will want to set this in a code block somewhere that takes
-  priority over basic-questions.yml.
-
-  Cut "1. Correct any errors using the "Make changes" button below." because there is no make changes button.(CaroRob)
-decoration: file-download
-question: |
-  % if not defined('email_success') or not email_success:
-  Review, download, and send Form
-  % else:
-  Form delivered
-  % endif
-subquestion: |
-  % if not defined('email_success') or not email_success:
-  Thank you ${users[0]}. Your form is ready to send to the court. **It is not
-  delivered until you complete the delivery process.**
-
-  1. Tap the preview image below to open the form in a new window. 
-  1. Download, and save or print a copy of this form for your 
-  records.
-  1. Click the "Submit to ${courts[0]}" button to send it to the court. 
-  1. You will have a chance to add instructions to the clerk and see the cover page before final delivery.
-  % else:
-  If you do not hear from the court in 1 business day, call the Trial Court’s
-  Emergency HelpLine 833-91-COURT (833-912-6878).
-  
-  The Emergency HelpLine is open:  
-  8:30am - 4:30pm,   
-  Monday - Friday.
-  % endif
-  
-  ${ form_to_file_no_cover }  
-  
-  % if not defined('email_success') or not email_success:
-    ${ action_button_html( url_action('form_delivery_complete'), id_tag="submitToCourt", label="Submit to " + str(courts[0].name), icon=send_icon, size="md", color="primary")}
-    
-  Download or email below:
-  % else:
-    Your email has already been delivered to ${courts[0]}
-    
-  [:file-download: Download with cover page](${final_form_to_file.url_for()})    
-  % endif
-progress: 100
-attachment code: attachments['final']
-section: download
----
-code: |
-  form_to_sign = pdf_concatenate(attachments['preview'], filename="Motion to Vacate Marital Home (Preview).pdf")
----
-reconsider: True
-code: |
-  form_to_file_no_cover = pdf_concatenate(attachments['final'], filename="Motion to Vacate Marital Home.pdf")
+# if: form_approved_for_email_filing
+# event: download
+# id: download form
+# comment: |
+#   The attachment email screen relies on final_form_to_file being defined. This
+#   will be built from the interview_metadata dictionary's contents, but if you
+#   add any addenda you will want to set this in a code block somewhere that takes
+#   priority over basic-questions.yml.
+# 
+#   Cut "1. Correct any errors using the "Make changes" button below." because there is no make changes button.(CaroRob)
+# decoration: file-download
+# question: |
+#   % if not defined('email_success') or not email_success:
+#   Review, download, and send Form
+#   % else:
+#   Form delivered
+#   % endif
+# subquestion: |
+#   % if not defined('email_success') or not email_success:
+#   Thank you ${users[0]}. Your form is ready to send to the court. **It is not
+#   delivered until you complete the delivery process.**
+# 
+#   1. Tap the preview image below to open the form in a new window. 
+#   1. Download, and save or print a copy of this form for your 
+#   records.
+#   1. Click the "Submit to ${courts[0]}" button to send it to the court. 
+#   1. You will have a chance to add instructions to the clerk and see the cover page before final delivery.
+#   % else:
+#   If you do not hear from the court in 1 business day, call the Trial Court’s
+#   Emergency HelpLine 833-91-COURT (833-912-6878).
+#   
+#   The Emergency HelpLine is open:  
+#   8:30am - 4:30pm,   
+#   Monday - Friday.
+#   % endif
+#   
+#   ${ form_to_file_no_cover }  
+#   
+#   % if not defined('email_success') or not email_success:
+#     ${ action_button_html( url_action('form_delivery_complete'), id_tag="submitToCourt", label="Submit to " + str(courts[0].name), icon=send_icon, size="md", color="primary")}
+#     
+#   Download or email below:
+#   % else:
+#     Your email has already been delivered to ${courts[0]}
+#     
+#   [:file-download: Download with cover page](${final_form_to_file.url_for()})    
+#   % endif
+# progress: 100
+# attachment code: attachments['final']
+# section: download
 ---
 code: |
   package_title = "Motion to Vacate Marital Home"
 ---
 objects:
-  - attachments: DADict
+  - motion_to_vacate_marital_home_attachment: ALDocument.using(title="Motion to Vacate Marital Home", filename="motion_to_vacate", enabled=True)
+---
+objects:
+  - al_user_bundle: ALDocumentBundle.using(title="Motion to Vacate Marital Home", filename="motion_to_vacate", enabled=True, elements=[motion_to_vacate_marital_home_attachment])
+  - al_court_bundle: ALDocumentBundle.using(title="Motion to Vacate Marital Home", filename="motion_to_vacate", enabled=True, elements=[motion_to_vacate_marital_home_attachment])  
 ---
 attachment:
 	- name: Motion to Vacate Marital Home
-	  variable name: attachments[i] # preview or final
+	  variable name: motion_to_vacate_marital_home_attachment[i] # preview or final
 	  filename: Motion_to_Vacate_Marital_Home
 	  docx template file: Motion_to_Vacate_Marital_Home.docx
