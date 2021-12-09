@@ -6,14 +6,32 @@ include:
   - docassemble.AssemblyLine:al_package.yml
   - docassemble.MassAccess:massaccess.yml
 ---
+mandatory: True
+code: |
+  interview_metadata # make sure we initialize the object
+  if not defined( "interview_metadata['MAMotionToVacateMaritalHome']"):
+    interview_metadata.initializeObject('MAMotionToVacateMaritalHome')
+  interview_metadata['MAMotionToVacateMaritalHome'].update({
+    'title': 'Motion To Vacate Marital Home',
+    'short title': 'Motion to Vacate Home',
+    'description': 'An interview to ask the court to order the other side in your family law case to leave your home',
+    'original_form': '',
+    'allowed courts': [
+      'Probate and Family Court'
+    ],
+    'preferred court': 'Probate and Family Court',
+    'categories': [],
+    'logic block variable': '',
+    'attachment block variable': '',  })
+---
 metadata:
-	title: |
-		Motion to Vacate Home
-	tags: |
-		- Family
-	description: |
-		An interview to ask the court to order the other side in your family law case to leave your home 
-  authors:    
+  title: |
+    Motion to Vacate Home
+  tags: |
+    - Family
+  description: |
+    An interview to ask the court to order the other side in your family law case to leave your home 
+  authors:
     - Kate Barry
 ---
 code: |
@@ -31,7 +49,7 @@ objects:
   docket_number: DAList.using(ask_number=True)
 ---
 comment: |
-	## Mandatory block that determines interview order.
+  ## Mandatory block that determines interview order.
 mandatory: True
 code: |
   form_approved_for_email_filing = False
@@ -179,6 +197,7 @@ code: | #change in the docx
     address_secret = False
     phone_number_secret = False
 ---
+id: pleadingtitle
 code: | #pleadingtitle
     pleading_title = 'Motion to Vacate Home'
 ---
@@ -426,12 +445,12 @@ yesno: qualifying_209C
 ---
 id: your name
 question:
-	What is your name?
+  What is your name?
 fields:
-	- First Name: users[0].name.first
+  - First Name: users[0].name.first
   - Middle name: users[0].name.middle
     required: False
-	- Last Name: users[0].name.last
+  - Last Name: users[0].name.last
   - Suffix: users[0].name.suffix
     code: name_suffix()
     required: False
@@ -943,7 +962,7 @@ objects:
   - al_court_bundle: ALDocumentBundle.using(title="Motion to Vacate Marital Home", filename="motion_to_vacate", enabled=True, elements=[motion_to_vacate_marital_home_attachment])  
 ---
 attachment:
-	- name: Motion to Vacate Marital Home
-	  variable name: motion_to_vacate_marital_home_attachment[i] # preview or final
-	  filename: Motion_to_Vacate_Marital_Home
-	  docx template file: Motion_to_Vacate_Marital_Home.docx
+  - name: Motion to Vacate Marital Home
+    variable name: motion_to_vacate_marital_home_attachment[i] # preview or final
+    filename: Motion_to_Vacate_Marital_Home
+    docx template file: Motion_to_Vacate_Marital_Home.docx
