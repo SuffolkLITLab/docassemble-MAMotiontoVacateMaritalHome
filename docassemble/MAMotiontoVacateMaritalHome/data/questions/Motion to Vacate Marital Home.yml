@@ -44,8 +44,8 @@ code: |
   allowed_courts = ["Probate and Family Court"]
 ---
 objects:
-  opposing_counsel: Individual
-  vacate_address: Address
+  opposing_counsel: ALIndividual
+  vacate_address: ALAddress
   docket_number: DAList.using(ask_number=True)
 ---
 comment: |
