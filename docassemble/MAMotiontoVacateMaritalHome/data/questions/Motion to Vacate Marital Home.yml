@@ -26,13 +26,67 @@ code: |
 ---
 metadata:
   title: |
+    Motion to Vacate Marital Home
+  short title: |
     Motion to Vacate Home
-  tags: |
-    - Family
   description: |
-    An interview to ask the court to order the other side in your family law case to leave your home 
+    If it is not safe for you to be in your home with your spouse or co-parent, this interview helps you ask the 
+    court to order the other side in your family law case to:
+      
+    * leave your home or
+    * stay away from your home if they already left
   authors:
     - Kate Barry
+  can_I_use_this_form: |
+    You can use this form if:
+
+    * You have an existing family law case in the Probate and Family Court, such as a divorce or a support order
+    * You are either:
+          * married to the other person in your family law case **or** 
+          * you have children with the other person
+    * You need the court to order the other person to leave your home to protect your health, safety, or welfare or the health, safety, or welfare of your children
+  before_you_start: |
+    You need to know:
+
+    * The name of the court your existing family law case is in
+    
+    Get ready to write your **affidavit**, or your explanation of the facts about
+    your case and why it is not safe to allow your spouse or co-parent to stay in
+    your home. It helps to talk about specific times that you felt unsafe or
+    threatened, including when and where they took place. 
+  maturity: production
+  estimated_completion_minutes: 20
+  estimated_completion_delta: 10
+  languages:
+    - en
+  help_page_url: https://www.masslegalhelp.org/children-families-divorce/divorce-separation/overview-divorce-and-separation
+  help_page_title: Overview of Divorce and Separation in Massachusetts
+  LIST_topics: 
+    - FA-07-00-00-00
+    - FA-07-01-00-00
+    - FA-06-00-00-00
+    - HO-02-00-00-00
+  tags: 
+    - FA-07-00-00-00
+    - FA-07-01-00-00
+    - FA-06-00-00-00
+    - HO-02-00-00-00
+  jurisdiction: NAM-US-US+MA
+  original_form: ""
+  original_form_published_on: 2020-06-01
+  review_date: 2024-04-27
+  form_titles:
+    - Motion to Vacate Marital Home
+  form_numbers: []
+  fees:
+    - Filing fee: 0.00
+  update_notes: |
+    This is a custom motion, not an official court form. As such it does not
+    require updating unless there are changes to the law or court rules.
+
+    The authority for this motion is M.G.L. ch. 208 s. 34B
+    
+    See: https://malegislature.gov/Laws/GeneralLaws/PartII/TitleIII/Chapter208/Section34B
 ---
 code: |
   github_repo_name = "docassemble-MAMotiontoVacateMaritalHome"
