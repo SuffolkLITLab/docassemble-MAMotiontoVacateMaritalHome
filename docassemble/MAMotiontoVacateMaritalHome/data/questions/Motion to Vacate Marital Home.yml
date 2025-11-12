@@ -74,7 +74,7 @@ metadata:
   jurisdiction: NAM-US-US+MA
   original_form: ""
   original_form_published_on: 2020-06-01
-  review_date: 2024-04-27
+  review_date: 2025-11-12
   form_titles:
     - Motion to Vacate Marital Home
   form_numbers: []
@@ -84,9 +84,10 @@ metadata:
     This is a custom motion, not an official court form. As such it does not
     require updating unless there are changes to the law or court rules.
 
-    The authority for this motion is M.G.L. ch. 208 s. 34B
+    The authority for this motion is M.G.L. ch. 208 s. 34B for married individuals, or M.G.L. ch. 209C, s. 15. for non-married individuals. 
     
-    See: https://malegislature.gov/Laws/GeneralLaws/PartII/TitleIII/Chapter208/Section34B
+    See: https://malegislature.gov/Laws/GeneralLaws/PartII/TitleIII/Chapter208/Section34B 
+    https://malegislature.gov/Laws/GeneralLaws/PartII/TitleIII/Chapter209c/Section15
 ---
 code: |
   github_repo_name = "docassemble-MAMotiontoVacateMaritalHome"
