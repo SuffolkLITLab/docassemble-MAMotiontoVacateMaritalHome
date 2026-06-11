@@ -132,7 +132,7 @@ Scenario: I can obtain a motion to vacate against another party
     | date | 02/15/2024 |  |
     | ready_to_serve | True |  |
     | service_date | 02/15/2024 |  |
-    | service_method | electronic mail | service_date |  |
+    | service_method | electronic mail | service_date |
     | plaintiff[0] | users[0] |  |
     | plaintiff[0].name | users[0].name |  |
     | plaintiff[0].name.first | Sydney |  |
