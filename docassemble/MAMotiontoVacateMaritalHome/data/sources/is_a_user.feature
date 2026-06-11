@@ -4,7 +4,7 @@ Scenario: I can obtain a motion to vacate against another party
   Given I start the interview at "Motion to Vacate Marital Home.yml"
   And the user gets to "download form do not email" with this data:
     | var | value | trigger |
-    | acknowledged_information_use['I accept the terms of use.'] | True |  |
+    | acknowledged_information_use | True |  |
     | al_intro_screen | True |  |
     | basic_questions_intro_screen | True |  |
     | intro_screen_seen | True |  |

@@ -52,7 +52,7 @@ setup(name='docassemble.MAMotiontoVacateMaritalHome',
       license='The MIT License (MIT)',
       url='https://docassemble.org',
       packages=find_namespace_packages(),
-      install_requires=['docassemble.AssemblyLine>=2.7.1'],
+      install_requires=['docassemble.AssemblyLine>=2.7.1', 'docassemble.MassAccess'],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/MAMotiontoVacateMaritalHome/', package='docassemble.MAMotiontoVacateMaritalHome'),
      )
