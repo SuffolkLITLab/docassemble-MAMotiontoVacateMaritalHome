@@ -195,5 +195,5 @@ Scenario: I can obtain a motion to vacate against another party
     | al_form_requires_digital_signature | True |  |
     | signature_choice | this_device |  |
     | saw_signature_choice | True |  |
-    | signature | users[0].signature |  |
+    | users[0].signature |  | users[0].signature |
     | basic_questions_signature_flow | True |  |
