@@ -132,7 +132,7 @@ Scenario: I can obtain a motion to vacate against another party
     | date | 02/15/2024 |  |
     | ready_to_serve | True |  |
     | service_date | 02/15/2024 |  |
-    | service_method | electronic mail | service_date |
+    | service_method | electronic mail |  |
     | plaintiff[0] | users[0] |  |
     | plaintiff[0].name | users[0].name |  |
     | plaintiff[0].name.first | Sydney |  |
@@ -195,5 +195,5 @@ Scenario: I can obtain a motion to vacate against another party
     | al_form_requires_digital_signature | True |  |
     | signature_choice | this_device |  |
     | saw_signature_choice | True |  |
-    | signature | users[0].signature |  |
+    | users[0].signature |  | users[0].signature |
     | basic_questions_signature_flow | True |  |
