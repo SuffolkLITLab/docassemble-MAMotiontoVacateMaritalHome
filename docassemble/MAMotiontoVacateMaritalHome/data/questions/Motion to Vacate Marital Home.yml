@@ -224,7 +224,7 @@ fields:
       - By email: electronic mail
       - By mail (with postage paid by me): first class mail, postage prepaid
       - other: other
-  - Other method: service_method_other
+  - Other method: service_method
     show if:
       variable: service_method
       is: other
