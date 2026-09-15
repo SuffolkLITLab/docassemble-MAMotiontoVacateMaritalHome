@@ -200,6 +200,7 @@ code: |
   users[0].signature
   download
 ---
+id: "serving other parties familiar"
 question: |
   Serving ${ other_parties.familiar() }
 subquestion: |
@@ -210,7 +211,9 @@ subquestion: |
   because of the Covid-19 emergency. You can call them to find out more.
   
   Do you know when you will give a copy of this form to ${ other_parties.familiar() } ?
-yesno: ready_to_serve
+fields:
+  - no label: ready_to_serve
+    datatype: yesnoradio
 ---
 id: service
 question: |
@@ -326,7 +329,9 @@ subquestion: |
    * You need to file this motion to protect the health, safety, or welfare of you or your children.
    % endif
 
-yesno: prerequisites
+fields:
+  - no label: prerequisites
+    datatype: yesnoradio
 
 ---
 id: Affidavit warning
@@ -496,7 +501,9 @@ question: | # wording - give options
   Probate and Family Court Case
 subquestion:
   Is your case about the paternity, custody, child support, or parenting time of your children with ${other_parties[0].familiar()}?
-yesno: qualifying_209C
+fields:
+  - no label: qualifying_209C
+    datatype: yesnoradio
 ---
 id: your name
 question:
@@ -572,7 +579,7 @@ subquestion:
 fields:
   - I do not know the date.: date_unknown
     datatype: yesno
-  - no label: last_lived_together_date
+  - "When did you last live with ${other_parties[0].familiar()}?": last_lived_together_date
     datatype: date
     hide if: date_unknown
   - Approximate date: last_lived_together_date
@@ -638,7 +645,7 @@ question: |
  Does ${other_parties[0].familiar()} have a lawyer?
 
 fields:
-  - no label: other_parties[0].has_counsel
+  - "Does ${other_parties[0].familiar()} have a lawyer?": other_parties[0].has_counsel
     datatype: yesnoradio
   - note: |
       ### What is the lawyer's ...
@@ -814,7 +821,9 @@ code: |
 id: is unsafe
 question: 
   Is your current living situation unsafe? 
-yesno: user_living_situation_unsafe
+fields:
+  - no label: user_living_situation_unsafe
+    datatype: yesnoradio
 ---
 id: why unsafe
 question: 
